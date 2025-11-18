@@ -1,0 +1,144 @@
+/* chatbot.css — modern interactive styling */
+:root{
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --muted:#7b8794;
+  --accent:#5b8cff;
+  --accent-2:#6dd3b6;
+  --bot:#eef6ff;
+  --me:#e8fff3;
+  --shadow: 0 8px 30px rgba(19, 30, 63, 0.08);
+  --radius:14px;
+  --glass: rgba(255,255,255,0.6);
+}
+
+/* Dark theme overrides */
+:root[data-theme="dark"]{
+  --bg: #0f1722;
+  --card: #0b1220;
+  --muted:#9aa7b3;
+  --accent:#4b76ff;
+  --accent-2:#22c1aa;
+  --bot:#102033;
+  --me:#0a2c21;
+  --glass: rgba(255,255,255,0.03);
+  color: #e6eef6;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg, var(--bg), #e9eef7);
+  padding:28px;
+}
+
+/* Wrapper */
+.chat-wrapper{
+  width:380px;
+  max-width:92vw;
+  border-radius:var(--radius);
+  background:linear-gradient(180deg, var(--card), var(--glass));
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  transition:transform .18s ease, opacity .18s ease;
+}
+
+/* Top bar */
+.chat-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px;
+  gap:8px;
+  border-bottom:1px solid rgba(0,0,0,0.04);
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  color:#fff;
+}
+
+.logo{font-weight:700;display:flex;gap:8px;align-items:center}
+.brand{font-weight:600;font-size:15px}
+.status{font-size:12px;opacity:.95}
+
+/* Controls */
+.chat-controls{display:flex;gap:6px}
+.icon-btn{
+  border:none;background:transparent;color:#fff;padding:6px;border-radius:8px;cursor:pointer;font-size:15px;
+  transition:background .12s ease, transform .08s ease;
+}
+.icon-btn:hover{background:rgba(255,255,255,0.08);transform:translateY(-1px)}
+
+/* Body */
+.chat-body{padding:12px;background:var(--card);display:flex;flex-direction:column;gap:10px}
+.messages{
+  max-height:380px;
+  overflow:auto;
+  display:flex;flex-direction:column;gap:10px;padding-right:6px;
+}
+
+/* message bubble */
+.msg{display:flex;flex-direction:column;max-width:80%;align-items:flex-start;opacity:1;transform:translateY(0)}
+.msg .bubble{
+  padding:12px 14px;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.4;
+  box-shadow: 0 6px 16px rgba(16,24,40,0.04);
+}
+
+.msg.bot{align-self:flex-start}
+.msg.bot .bubble{background:var(--bot); color:var(--muted)}
+.msg.me{align-self:flex-end;text-align:right}
+.msg.me .bubble{background:var(--me); color:#053018}
+
+/* timestamp */
+.msg .meta{font-size:11px;color:var(--muted);margin-top:6px;opacity:.7}
+
+/* quick replies */
+.quick-replies{display:flex;flex-wrap:wrap;gap:8px;padding:6px}
+.quick-replies button{
+  border:none;background:rgba(91,140,255,0.08);color:var(--accent);padding:8px 12px;border-radius:999px;cursor:pointer;font-size:13px;
+}
+.quick-replies button:hover{transform:translateY(-2px)}
+
+/* input */
+.chat-input{
+  display:flex;gap:8px;align-items:center;padding:12px;border-top:1px solid rgba(0,0,0,0.04);background:transparent;
+}
+.chat-input input{
+  flex:1;padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);outline:none;font-size:14px;background:transparent;color:inherit;
+}
+.send-btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+.send-btn:hover{opacity:.95;transform:translateY(-1px)}
+
+/* typing indicator */
+.typing {
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  padding:8px 12px;
+  border-radius:12px;
+  background:linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1s infinite}
+.dot:nth-child(2){animation-delay:.12s}
+.dot:nth-child(3){animation-delay:.24s}
+@keyframes blink{0%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}100%{opacity:.25;transform:translateY(0)}}
+
+/* fades */
+.fade-in{animation:fadeIn .28s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* minimized state */
+.chat-wrapper.minimized{width:320px;height:60px;border-radius:12px;overflow:visible}
+.chat-wrapper.minimized .chat-body,
+.chat-wrapper.minimized .chat-input,
+.chat-wrapper.minimized .quick-replies{
+  display:none;
+}
+.chat-wrapper.minimized .chat-top{padding:10px 14px}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindMate | Login & Signup</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+
+<body>
+
+  <div class="auth-container">
+
+    <!-- Animated Title -->
+    <h2 class="title-glow">✨ MindMate</h2>
+    <p class="subtitle">Your Emotional Wellness Companion</p>
+
+    <!-- Switch Tabs -->
+    <div class="tab-box">
+      <button id="loginTab" class="tab active">Login</button>
+      <button id="signupTab" class="tab">Sign Up</button>
+      <div class="tab-indicator"></div>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="form active">
+      <div class="input-field">
+        <input type="email" id="loginEmail" required />
+        <label>Email</label>
+        <i class="fas fa-envelope icon"></i>
+      </div>
+
+      <div class="input-field">
+        <input type="password" id="loginPassword" required />
+        <label>Password</label>
+        <i class="fas fa-lock icon"></i>
+        <span class="toggle-password" onclick="togglePassword('loginPassword')">👁</span>
+      </div>
+
+      <button type="submit" class="btn ripple">Login</button>
+      <p class="switch-text">Don’t have an account? <a href="#" id="goToSignup">Sign Up</a></p>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signupForm" class="form hidden">
+      <div class="input-field">
+        <input type="text" id="signupName" required />
+        <label>Full Name</label>
+        <i class="fas fa-user icon"></i>
+      </div>
+
+      <div class="input-field">
+        <input type="email" id="signupEmail" required />
+        <label>Email</label>
+        <i class="fas fa-envelope icon"></i>
+      </div>
+
+      <div class="input-field">
+        <input type="password" id="signupPassword" required />
+        <label>Password</label>
+        <i class="fas fa-lock icon"></i>
+        <span class="toggle-password" onclick="togglePassword('signupPassword')">👁</span>
+      </div>
+
+      <p id="passwordStrength" class="strength-text"></p>
+
+      <button type="submit" class="btn ripple">Create Account</button>
+      <p class="switch-text">Already have an account? <a href="#" id="goToLogin">Login</a></p>
+    </form>
+
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

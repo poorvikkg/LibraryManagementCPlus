@@ -1,0 +1,185 @@
+/* Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+
+/* Background Animated Gradient */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg,#7aa8ff,#f08ab2,#8cd6be,#f7d08c);
+  background-size: 300% 300%;
+  animation: bgMove 10s infinite alternate;
+}
+
+@keyframes bgMove {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+/* Auth Card */
+.auth-container {
+  width: 360px;
+  padding: 40px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 25px;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  animation: popUp 0.6s ease;
+  color: white;
+}
+
+@keyframes popUp {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Title */
+.title-glow {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 5px;
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+  to { text-shadow: 0 0 18px rgba(255,255,255,0.9); }
+}
+
+.subtitle {
+  text-align: center;
+  color: #eaeaea;
+  margin-bottom: 18px;
+}
+
+/* Tabs */
+.tab-box {
+  display: flex;
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tab {
+  width: 50%;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: #eaeaea;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.tab.active { color: #fff; }
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  width: 50%;
+  background: #fff;
+  transition: transform 0.3s;
+}
+
+/* Input Fields */
+.input-field {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.input-field input {
+  width: 100%;
+  padding: 12px 40px 12px 15px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.input-field label {
+  position: absolute;
+  top: 12px;
+  left: 15px;
+  color: #eee;
+  pointer-events: none;
+  transition: 0.3s;
+  font-size: 0.9rem;
+}
+
+.input-field input:focus + label,
+.input-field input:not(:placeholder-shown) + label {
+  top: -9px;
+  left: 10px;
+  background: rgba(255,255,255,0.25);
+  padding: 0px 6px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+/* Icons */
+.icon {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  color: #f0f0f0;
+}
+
+/* Password Eye */
+.toggle-password {
+  position: absolute;
+  right: 35px;
+  top: 12px;
+  cursor: pointer;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg,#8d85ff,#f58ab1);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.btn:hover { transform: scale(1.04); }
+
+/* Ripple Effect */
+.btn.ripple:active::after {
+  content: "";
+  position: absolute;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+  left: var(--x); top: var(--y);
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleAnim 0.5s ease;
+}
+
+@keyframes rippleAnim {
+  to { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+}
+
+.switch-text { margin-top: 8px; }
+
+/* Hidden Class */
+.hidden { display: none; }
+
+/* Password Strength Text */
+.strength-text {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  text-align: left;
+}

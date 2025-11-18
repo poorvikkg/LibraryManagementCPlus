@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History | EmoWellbeing</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ===== History Container Layout ===== */
+    .history-container {
+      max-width: 1400px;
+      margin: 100px auto 20px;
+      padding: 0 15px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    /* ===== Card Styling ===== */
+    .chart-card, .journal-card {
+      background: #f8f6fc;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(167, 139, 186, 0.08);
+      transition: background 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+    body.dark-mode .chart-card, body.dark-mode .journal-card {
+      background: var(--dark-card);
+      color: var(--dark-text);
+    }
+
+    .chart-card h3, .journal-card h3 {
+      margin: 0 0 15px 0;
+      font-size: 20px;
+      color: #a78bba;
+    }
+    body.dark-mode .chart-card h3, body.dark-mode .journal-card h3 {
+      color: #6a9ef9;
+    }
+
+    /* ===== Chart Wrap ===== */
+    .chart-wrap {
+      width: 100%;
+      height: 550px;
+      position: relative;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chart-wrap canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    /* ===== Filters Section ===== */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .filters input, .filters select {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e6e9ef;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    body.dark-mode .filters input, body.dark-mode .filters select {
+      background: #3b3b50;
+      color: var(--dark-text);
+      border: 1px solid #555;
+    }
+    .filters input:focus, .filters select:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,117,252,0.1);
+    }
+
+    /* ===== Table Styling ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      display: block;
+    }
+    table thead {
+      background: #f4f6f9;
+    }
+    body.dark-mode table thead {
+      background: #2c2c3e;
+    }
+    table th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--blue);
+      border-bottom: 2px solid #e6e9ef;
+      cursor: pointer;
+      user-select: none;
+    }
+    body.dark-mode table th {
+      color: #6a9ef9;
+      border-bottom: 2px solid #555;
+    }
+    table th:hover {
+      background: #e6e9ef;
+    }
+    body.dark-mode table th:hover {
+      background: #3b3b50;
+    }
+    table td {
+      padding: 12px;
+      border-bottom: 1px solid #e6e9ef;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      max-width: 350px;
+    }
+    body.dark-mode table td {
+      border-bottom: 1px solid #555;
+      color: var(--dark-text);
+    }
+    table tbody tr:hover {
+      background: #f9f9f9;
+    }
+    body.dark-mode table tbody tr:hover {
+      background: #3b3b50;
+    }
+
+    /* ===== Mood Cell Styling ===== */
+    .mood-5 { color: #FFD93D; font-weight: 600; }
+    .mood-4 { color: #6BCB77; font-weight: 600; }
+    .mood-3 { color: #FF6B6B; font-weight: 600; }
+    .mood-2 { color: #FF922B; font-weight: 600; }
+    .mood-1 { color: #4D96FF; font-weight: 600; }
+
+    /* ===== Entry Content & Toggle Button ===== */
+    .entry-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .entry-content span {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .toggle-text-btn {
+      background: none;
+      border: none;
+      color: var(--blue);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      font-size: 13px;
+      text-decoration: underline;
+      transition: color 0.2s;
+      text-align: left;
+      width: fit-content;
+    }
+    .toggle-text-btn:hover {
+      color: #6a11cb;
+    }
+    body.dark-mode .toggle-text-btn {
+      color: #6a9ef9;
+    }
+    body.dark-mode .toggle-text-btn:hover {
+      color: #8bb9ff;
+    }
+
+    /* ===== Button Styling ===== */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn.primary {
+      background: var(--blue);
+      color: white;
+    }
+    .btn.primary:hover {
+      background: #2575fc;
+    }
+    .btn.primary:active {
+      transform: translateY(0);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ===== Action Buttons in Table ===== */
+    .action-btn {
+      background: none;
+      border: 1px solid #e6e9ef;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      color: #555;
+    }
+    body.dark-mode .action-btn {
+      border: 1px solid #555;
+      color: #999;
+    }
+    .action-btn:hover:not(:disabled) {
+      background: #f4f6f9;
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    body.dark-mode .action-btn:hover:not(:disabled) {
+      background: #3b3b50;
+      border-color: #6a9ef9;
+      color: #6a9ef9;
+    }
+    .action-btn.delete-btn {
+      border-color: #ff4444;
+      color: #ff4444;
+    }
+    .action-btn.delete-btn:hover {
+      background: #ffe6e6;
+      border-color: #ff2222;
+      color: #ff2222;
+    }
+    body.dark-mode .action-btn.delete-btn {
+      border-color: #ff6666;
+      color: #ff6666;
+    }
+    body.dark-mode .action-btn.delete-btn:hover {
+      background: rgba(255, 68, 68, 0.1);
+      border-color: #ff8888;
+      color: #ff8888;
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 768px) {
+      .history-container {
+        margin-top: 90px;
+        padding: 0 10px 80px;
+      }
+      .filters {
+        flex-direction: column;
+      }
+      .filters input, .filters select {
+        width: 100%;
+        min-width: unset;
+      }
+      table {
+        font-size: 13px;
+      }
+      table th, table td {
+        padding: 8px;
+      }
+      td:nth-child(3) {
+        max-width: 200px;
+      }
+      .chart-wrap {
+        height: 400px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chart-wrap {
+        height: 300px;
+      }
+      table th, table td {
+        padding: 6px;
+        font-size: 12px;
+      }
+    }
+
+    /* ===== Loading State ===== */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+    }
+    body.dark-mode .loading {
+      color: #999;
+    }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    body.dark-mode .empty-state {
+      color: #999;
+    }
+  </style>
+    <!-- Motivational Banner styles -->
+    <style>
+      .motivational-banner { 
+        position: fixed; 
+        bottom: 0; 
+        left: 0; 
+        right: 0; 
+        background: linear-gradient(90deg, #a78bba 0%, #c9819f 25%, #7db8c4 50%, #87b79e 75%, #d4a574 100%);
+        background-size: 300% 300%;
+        animation: gradient-shift 8s ease infinite;
+        /* subtle dark overlay to make footer slightly darker */
+        background-color: rgba(0,0,0,0.10);
+        background-blend-mode: multiply;
+        color: white; 
+        padding:12px 16px; 
+        text-align:center; 
+        font-size:15px; 
+        font-weight:600; 
+        z-index:100; 
+        box-shadow:0 -4px 16px rgba(0,0,0,0.12); 
+        overflow:hidden; 
+        height:56px; 
+        display:flex; 
+        align-items:center; 
+        justify-content:center; 
+      }
+      @keyframes gradient-shift { 
+        0% { background-position: 0% 50%; } 
+        50% { background-position: 100% 50%; } 
+        100% { background-position: 0% 50%; } 
+      }
+      .motivational-text{ 
+        display:inline-block; 
+        animation:slide 15s linear infinite; 
+        white-space:nowrap; 
+        padding:0 20px; 
+      }
+      .motivational-text .mot-part{ 
+        display:inline-block; 
+        margin-right:28px; 
+        padding:0 6px; 
+      }
+      @keyframes slide{ 
+        0%{ transform:translateX(100%);} 
+        100%{ transform:translateX(-100%);} 
+      }
+      .motivational-banner:hover .motivational-text{ 
+        animation-play-state:paused; 
+      }
+      main { padding-bottom: 80px; }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="brand">
+    <span class="logo">✨ MindMate</span>
+  </div>
+  <nav class="nav-links">
+    <a href="dashboard.html">Home</a>
+    <a href="journal.html">Journal</a>
+    <a href="history.html" class="active">History</a>
+    <a href="quiz.html">Quiz</a>
+    <a href="games.html">Games</a>
+  </nav>
+  <div class="user-controls">
+    
+    <button class="dark-toggle" id="darkToggleBtn" aria-label="Toggle theme">🌙</button>
+    <button id="logoutBtn" class="btn secondary">Logout</button>
+  </div>
+</header>
+
+<main class="history-container">
+  <section class="card chart-card">
+    <h3>Mood History (Last 30 Entries)</h3>
+    <div class="chart-wrap" style="height:550px;">
+      <canvas id="historyMoodChart" aria-label="Mood history chart" role="img"></canvas>
+    </div>
+    <button id="exportMoodCSV" class="btn primary" style="margin-top:10px;">Export Mood CSV</button>
+  </section>
+
+  <section class="card journal-card">
+    <h3>Journal History</h3>
+
+    <div class="filters">
+      <input type="text" id="journalSearch" placeholder="Search text...">
+      <select id="moodFilter">
+        <option value="">All Moods</option>
+        <option value="5">😊 Happy</option>
+        <option value="4">🙂 Good</option>
+        <option value="3">😐 Neutral</option>
+        <option value="2">😟 Worried</option>
+        <option value="1">☹️ Sad</option>
+      </select>
+      <input type="text" id="dateRange" placeholder="YYYY-MM-DD to YYYY-MM-DD" title="Enter date range as: YYYY-MM-DD to YYYY-MM-DD">
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="date">Date ⬍</th>
+          <th data-sort="mood">Mood ⬍</th>
+          <th>Journal</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="journalHistoryTable"></tbody>
+    </table>
+
+    <button id="exportJournalCSV" class="btn primary" style="margin-top:10px;">Export Journal CSV</button>
+  </section>
+</main>
+
+<script type="module" src="./js/history.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) document.body.classList.add('dark-mode');
+    const toggle = document.querySelector('.dark-toggle');
+    if (toggle) toggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    });
+  });
+</script>
+<!-- Motivational Banner (shared) -->
+<div class="motivational-banner" id="motivationalBanner">
+  <span class="motivational-text" id="motivationalText">✨ Be present • Breathe deeply • You are capable • Small steps matter</span>
+</div>
+
+<script>
+  const motivationalMessages = [
+    "✨ Be present • Breathe deeply • You are capable • Small steps matter",
+    "🌟 Believe in yourself • Take a moment • You are enough • Keep going",
+    "💖 Practice kindness • Rest when needed • Celebrate progress • Breathe",
+  ];
+  let messageIndex = 0;
+
+  function renderMotivationalMessageTo(el, message) {
+    const parts = message.split('•').map(p => p.trim()).filter(Boolean);
+    el.innerHTML = parts.map(p => `<span class=\"mot-part\">${p}</span>`).join('');
+  }
+
+  function rotateMotivationalMessage() {
+    const textElement = document.getElementById('motivationalText');
+    if (!textElement) return;
+    messageIndex = (messageIndex + 1) % motivationalMessages.length;
+    renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+    textElement.style.animation = 'none';
+    setTimeout(() => { textElement.style.animation = 'slide 15s linear infinite'; }, 10);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const textElement = document.getElementById('motivationalText');
+    if (textElement) renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+    setInterval(rotateMotivationalMessage, 20000);
+  });
+</script>
+</body>
+</html>

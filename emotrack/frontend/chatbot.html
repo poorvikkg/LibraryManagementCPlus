@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EmoChat • Interactive</title>
+
+  <link rel="stylesheet" href="chatbot.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="chat-wrapper" id="chatWrapper" aria-live="polite">
+    <div class="chat-top">
+      <div class="chat-left">
+        <div class="logo">💬 <span class="brand">EmoChat</span></div>
+        <div class="status" id="botStatus">Online</div>
+      </div>
+
+      <div class="chat-controls">
+        <button id="themeToggle" class="icon-btn" title="Toggle theme">🌙</button>
+        <button id="minimizeBtn" class="icon-btn" title="Minimize">—</button>
+        <button id="closeChat" class="icon-btn" title="Close">✖</button>
+      </div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="messages" id="chatMessages" role="log">
+        <div class="msg bot fade-in">
+          <div class="bubble">Hello! 👋 I'm EmoChat — how are you feeling right now?</div>
+          <div class="meta">just now</div>
+        </div>
+      </div>
+
+      <div class="quick-replies" id="quickReplies">
+        <!-- JS will populate quick replies -->
+      </div>
+    </div>
+
+    <form class="chat-input" id="chatForm" autocomplete="off" spellcheck="false">
+      <button type="button" id="emojiBtn" class="icon-btn">😊</button>
+      <input id="userMessage" name="message" placeholder="Type something supportive..." />
+      <button id="sendMessage" class="send-btn" type="submit">Send</button>
+    </form>
+  </div>
+
+  <audio id="dingSound" src="data:audio/ogg;base64,T2dnUwACAAAAAAAAAABVD..." preload="auto"></audio>
+
+  <script src="chatbot.js"></script>
+</body>
+</html>

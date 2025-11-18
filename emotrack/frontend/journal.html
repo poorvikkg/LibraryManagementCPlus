@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Journal | EmoWellbeing</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ===== Navbar Centered ===== */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 20px;
+      background: linear-gradient(90deg, #a78bba 0%, #c9819f 25%, #7db8c4 50%, #87b79e 75%, #d4a574 100%);
+      background-size: 300% 300%;
+      animation: navbar-gradient-shift 8s ease infinite;
+      color: white;
+      box-shadow: 0 4px 12px rgba(167, 139, 186, 0.2);
+      border-radius: 0 0 12px 12px;
+      gap: 40px;
+    }
+    .navbar .brand { position: absolute; left: 20px; }
+
+    /* ===== Journal + Chart Container ===== */
+    .journal-chart-container {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 20px auto;
+    }
+    .journal-chart-container > div {
+      flex: 1;
+      min-width: 480px;
+    }
+
+    /* ===== Journal Textarea ===== */
+    #journalEntry {
+      width: 100%;
+      min-height: 400px;
+      font-size: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #e6e9ef;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    body.dark-mode #journalEntry {
+      background: #3b3b50;
+      color: var(--dark-text);
+      border: 1px solid #555;
+    }
+
+    /* ===== Mood Selector ===== */
+    .mood-select { margin: 16px 0; display: flex; align-items: center; gap: 8px; }
+    .mood-select select { padding: 6px 10px; border-radius: 8px; border: 1px solid #e6e9ef; }
+    body.dark-mode .mood-select select { background: #3b3b50; color: var(--dark-text); border:1px solid #555; }
+
+    /* ===== Word Count ===== */
+    #wordCount { font-size: 13px; color: var(--muted); margin-top: 4px; display: block; }
+
+    /* ===== Search Filter ===== */
+    #journalSearch { width: 100%; padding: 8px 12px; margin-bottom: 12px; border-radius: 12px; border:1px solid #e6e9ef; }
+    body.dark-mode #journalSearch { background:#3b3b50; color: var(--dark-text); border:1px solid #555; }
+
+    /* Mood filter dropdown */
+    #moodFilter { width: 100%; padding: 8px 12px; margin-bottom: 12px; border-radius: 12px; border:1px solid #e6e9ef; }
+    body.dark-mode #moodFilter { background:#3b3b50; color: var(--dark-text); border:1px solid #555; }
+
+    /* ===== Chart ===== */
+    .chart-wrap { height: 450px; min-height: 450px; max-height: 450px; }
+
+    /* ===== Journal history entry colors ===== */
+    .journal-entry[data-mood="5"] { border-left: 5px solid #FFD93D; }
+    .journal-entry[data-mood="4"] { border-left: 5px solid #6BCB77; }
+    .journal-entry[data-mood="3"] { border-left: 5px solid #FF6B6B; }
+    .journal-entry[data-mood="2"] { border-left: 5px solid #FF922B; }
+    .journal-entry[data-mood="1"] { border-left: 5px solid #4D96FF; }
+
+    /* ===== Show More/Less Button ===== */
+    .show-more-btn {
+      background: none;
+      border: none;
+      color: var(--blue);
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 8px;
+      font-size: 14px;
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+    .show-more-btn:hover {
+      color: #6a11cb;
+    }
+    body.dark-mode .show-more-btn {
+      color: #6a9ef9;
+    }
+    body.dark-mode .show-more-btn:hover {
+      color: #8bb9ff;
+    }
+
+    .entry-text {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    /* ===== Motivational Banner (shared) ===== */
+    .motivational-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(90deg, #a78bba 0%, #c9819f 25%, #7db8c4 50%, #87b79e 75%, #d4a574 100%);
+      background-size: 300% 300%;
+      animation: gradient-shift 8s ease infinite;
+      /* subtle dark overlay to keep footer slightly darker than body */
+      background-color: rgba(0,0,0,0.10);
+      background-blend-mode: multiply;
+      color: white;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      z-index: 100;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+      overflow: hidden;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .motivational-text {
+      display: inline-block;
+      animation: slide 15s linear infinite;
+      white-space: nowrap;
+      padding: 0 20px;
+    }
+
+    .motivational-text .mot-part {
+      display: inline-block;
+      margin-right: 28px;
+      padding: 0 6px;
+    }
+
+    @keyframes slide {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .motivational-banner:hover .motivational-text { animation-play-state: paused; }
+
+    /* make room so content doesn't overlap the banner and navbar */
+    main, .journal-chart-container { padding-bottom: 80px; margin-top: 90px; }
+  </style>
+</head>
+<body>
+  <!-- Navbar (standardized to games header) -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo">✨ MindMate</span>
+    </div>
+    <nav class="nav-links">
+      <a href="dashboard.html">Home</a>
+      <a href="journal.html" class="active">Journal</a>
+      <a href="history.html">History</a>
+      <a href="quiz.html">Quiz</a>
+      <a href="games.html">Games</a>
+    </nav>
+    <div class="user-controls">
+      
+      <button class="dark-toggle" id="darkToggleBtn" aria-label="Toggle theme">🌙</button>
+      <button id="logoutBtn" class="btn secondary">Logout</button>
+    </div>
+  </header>
+
+  <!-- Journal + Chart Container -->
+  <div class="journal-chart-container" style="margin-top: 90px;">
+    <!-- Journal Card -->
+    <div class="card">
+      <h3>Your Journal</h3>
+
+      <input type="text" id="journalSearch" placeholder="Search journal entries...">
+      <select id="moodFilter">
+        <option value="">All Moods</option>
+        <option value="5">😊 Happy</option>
+        <option value="4">🙂 Good</option>
+        <option value="3">😐 Neutral</option>
+        <option value="2">😟 Worried</option>
+        <option value="1">☹️ Sad</option>
+      </select>
+
+      <textarea id="journalEntry" placeholder="Write your thoughts here..."></textarea>
+      <span id="wordCount">Words: 0</span>
+
+      <div class="mood-select">
+        <label>Mood:</label>
+        <select id="journalMood">
+          <option value="">None</option>
+          <option value="5">😊 Happy</option>
+          <option value="4">🙂 Good</option>
+          <option value="3">😐 Neutral</option>
+          <option value="2">😟 Worried</option>
+          <option value="1">☹️ Sad</option>
+        </select>
+      </div>
+
+      <div class="actions" style="margin-top:12px;">
+        <button id="saveJournal" class="btn primary">Save</button>
+        <span id="journalSavedMsg" class="muted small" aria-live="polite"></span>
+      </div>
+
+      <div class="journal-history" id="journalHistory" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Mood Chart Card -->
+    <div class="card">
+      <h3>Mood Trend</h3>
+      <div class="chart-wrap">
+        <canvas id="journalMoodChart" aria-label="Mood trend chart" role="img"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/journal.js"></script>
+  <script>
+    // Initialize and persist dark mode for this page
+    document.addEventListener('DOMContentLoaded', () => {
+      const isDark = localStorage.getItem('darkMode') === 'true';
+      if (isDark) document.body.classList.add('dark-mode');
+      const toggle = document.querySelector('.dark-toggle');
+      if (toggle) toggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+      });
+    });
+  </script>
+  <!-- Motivational Banner (shared) -->
+  <div class="motivational-banner" id="motivationalBanner">
+    <span class="motivational-text" id="motivationalText">
+      ✨ You are amazing! • 💪 Keep pushing forward! • 🌟 Believe in yourself! • 💖 You deserve happiness! • 🚀 Great things are coming! • 🎯 Focus on your growth! • 💫 Never give up! • 🌈 Every step counts!
+    </span>
+  </div>
+
+  <script>
+    const motivationalMessages = [
+      "✨ You are amazing! • 💪 Keep pushing forward! • 🌟 Believe in yourself! • 💖 You deserve happiness! • 🚀 Great things are coming!",
+      "🎯 Focus on your growth! • 💫 Never give up! • 🌈 Every step counts! • 🔥 You are unstoppable! • 🌺 Progress over perfection!",
+      "💝 Be kind to yourself! • 🌸 Your potential is limitless! • ⭐ Embrace the journey! • 🎪 Celebrate small wins! • 🦋 Transform your mind!",
+      "🎨 Create your own path! • 💎 You are valuable! • 🌟 Spread positivity! • 🚀 Chase your dreams! • ❤️ Love yourself first!",
+      "🌻 Smile, you've got this! • 🏆 You are a champion! • 🌙 Rest and recharge! • ☀️ Rise and shine! • 🎉 Life is beautiful!"
+    ];
+    let messageIndex = 0;
+
+    function renderMotivationalMessageTo(el, message) {
+      const parts = message.split('•').map(p => p.trim()).filter(Boolean);
+      el.innerHTML = parts.map(p => `<span class="mot-part">${p}</span>`).join('');
+    }
+
+    function rotateMotivationalMessage() {
+      const textElement = document.getElementById('motivationalText');
+      if (!textElement) return;
+      messageIndex = (messageIndex + 1) % motivationalMessages.length;
+      renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+      textElement.style.animation = 'none';
+      setTimeout(() => { textElement.style.animation = 'slide 15s linear infinite'; }, 10);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const textElement = document.getElementById('motivationalText');
+      if (textElement) renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+      setInterval(rotateMotivationalMessage, 20000);
+    });
+  </script>
+</body>
+</html>

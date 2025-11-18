@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' http://localhost:5000 ws://localhost:*; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;" />
+  <title>Student Dashboard </title>
+
+  <!-- styles -->
+  <link rel="stylesheet" href="dashboard.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ===== Enhanced Dashboard Styles ===== */
+    .stress-relief-section {
+      grid-column: 1 / -1;
+      background: transparent;
+      color: inherit;
+      padding: 40px 0 20px 0;
+      border-radius: 0;
+      box-shadow: none;
+      margin-top: 30px;
+      border-top: 2px solid #e0e0e0;
+    }
+
+    body.dark-mode .stress-relief-section {
+      border-top-color: #3b3b50;
+    }
+
+    .stress-relief-section h3 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+      color: #333;
+      font-weight: 700;
+    }
+
+    body.dark-mode .stress-relief-section h3 {
+      color: #fff;
+    }
+
+    .stress-relief-section p {
+      margin: 0 0 25px 0;
+      opacity: 0.7;
+      font-size: 14px;
+      color: #666;
+    }
+
+    body.dark-mode .stress-relief-section p {
+      color: #aaa;
+      opacity: 1;
+    }
+
+    .videos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .video-card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.dark-mode .video-card {
+      background: #1f1f2e;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .video-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    body.dark-mode .video-card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .video-thumbnail {
+      width: 100%;
+      height: 170px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .video-thumbnail::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0);
+      transition: background 0.3s;
+    }
+
+    .video-card:hover .video-thumbnail::before {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .video-thumbnail::after {
+      content: '▶';
+      position: absolute;
+      font-size: 35px;
+      color: white;
+      opacity: 0.8;
+      transition: transform 0.3s, opacity 0.3s;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .video-card:hover .video-thumbnail::after {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+
+    .video-info {
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-info h4 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      line-height: 1.3;
+      flex-grow: 1;
+    }
+
+    body.dark-mode .video-info h4 {
+      color: #fff;
+    }
+
+    .video-info p {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      color: #606060;
+      line-height: 1.3;
+    }
+
+    body.dark-mode .video-info p {
+      color: #aaa;
+    }
+
+    .video-info .duration {
+      display: inline-block;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 2px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: auto;
+      width: fit-content;
+    }
+
+    .video-info .duration {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+
+    /* ===== Full Width Sidebar ===== */
+    .sidebar.full-width-bottom {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    body.dark-mode .sidebar.full-width-bottom {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar.full-width-bottom {
+        grid-template-columns: 1fr;
+      }
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.3s, transform 0.2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    body.dark-mode .card {
+      background: var(--dark-card);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h3 {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      color: var(--blue);
+      border-bottom: 2px solid #f0f2f5;
+      padding-bottom: 10px;
+    }
+
+    body.dark-mode .card h3 {
+      border-bottom-color: #3b3b50;
+      color: #6a9ef9;
+    }
+
+    /* ===== Mood Check-in Enhancement ===== */
+    .mood-row {
+      display: flex;
+      gap: 12px;
+      justify-content: space-around;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 12px;
+    }
+
+    body.dark-mode .mood-row {
+      background: #2c2c3e;
+    }
+
+    .mood-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      background: white;
+      font-size: 35px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .mood-btn {
+      background: #3b3b50;
+    }
+
+    .mood-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(37, 117, 252, 0.3);
+      border-color: var(--blue);
+    }
+
+    .mood-btn.selected {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.2);
+      transform: scale(1.15);
+    }
+
+    /* ===== Chart Wrap Enhancement ===== */
+    .chart-wrap {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 15px;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.dark-mode .chart-wrap {
+      background: #2c2c3e;
+    }
+
+    /* ===== Quick Stats Enhancement ===== */
+    .quick-stats {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .quick-stats h3 {
+      color: white;
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .quick-stats .stat {
+      padding: 12px;
+      margin: 8px 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 15px;
+      border-left: 3px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .quick-stats .stat strong {
+      color: #ffd93d;
+      font-size: 18px;
+    }
+
+    /* ===== Notifications Enhancement ===== */
+    .notifications h3 {
+      margin: 0 0 15px 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f2f5;
+    }
+
+    body.dark-mode .notifications h3 {
+      border-bottom-color: #3b3b50;
+    }
+
+    .notifications ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .notifications li {
+      padding: 10px;
+      margin: 8px 0;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border-left: 3px solid var(--blue);
+      font-size: 14px;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    body.dark-mode .notifications li {
+      background: #2c2c3e;
+      border-left-color: #6a9ef9;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* ===== Actions Button Enhancement ===== */
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .actions .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .actions .btn.primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+    }
+
+    .actions .btn.primary:hover {
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* ===== Responsive Grid ===== */
+    @media (max-width: 1024px) {
+      .videos-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stress-relief-section {
+        padding: 20px 0;
+        margin-top: 25px;
+      }
+
+      .stress-relief-section h3 {
+        font-size: 20px;
+      }
+
+      .videos-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .video-thumbnail {
+        height: 140px;
+        font-size: 45px;
+      }
+
+      .mood-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+      }
+    }
+
+    /* ===== Motivational Banner ===== */
+    .motivational-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(90deg, #a78bba 0%, #c9819f 25%, #7db8c4 50%, #87b79e 75%, #d4a574 100%);
+      background-size: 300% 300%;
+      animation: gradient-shift 8s ease infinite;
+      /* darker overlay for banner so it reads slightly darker than page content */
+      background-color: rgba(0,0,0,0.10);
+      background-blend-mode: multiply;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      z-index: 100;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+      overflow: hidden;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .motivational-text {
+      display: inline-block;
+      animation: slide 15s linear infinite;
+      white-space: nowrap;
+      padding: 0 20px;
+    }
+
+    .motivational-text .mot-part {
+      display: inline-block;
+      margin-right: 28px; /* extra breathing space between quotes */
+      padding: 0 6px;
+    }
+
+    @keyframes slide {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    .motivational-banner:hover .motivational-text {
+      animation-play-state: paused;
+    }
+
+    body.dark-mode .motivational-banner {
+      box-shadow: 0 -4px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    /* Adjust main content to not overlap with banner */
+    main {
+      padding-bottom: 80px;
+    }
+
+    /* Dark toggle styling moved to dashboard.css for consistency */
+  </style>
+</head>
+<body>
+  <!-- Navbar (standardized to games header) -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo">✨ MindMate</span>
+    </div>
+    <nav class="nav-links">
+      <a href="dashboard.html">Home</a>
+      <a href="journal.html">Journal</a>
+      <a href="history.html">History</a>
+      <a href="quiz.html">Quiz</a>
+      <a href="games.html">Games</a>
+    </nav>
+    <div class="user-controls">
+      <div id="welcomeText" class="muted" style="margin-right:12px"></div>
+        
+        <button class="dark-toggle" id="darkToggleBtn" aria-label="Toggle theme">🌙</button>
+        <button id="logoutBtn" class="btn secondary">Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="main-grid">
+    <!-- Left Column -->
+    <section class="card">
+      <h3>Mood Check-in</h3>
+      <p class="muted">How are you feeling right now?</p>
+      <div class="mood-row" role="radiogroup" aria-label="Mood choices">
+        <button class="mood-btn" data-mood="5" aria-label="Happy">😊</button>
+        <button class="mood-btn" data-mood="4" aria-label="Good">🙂</button>
+        <button class="mood-btn" data-mood="3" aria-label="Neutral">😐</button>
+        <button class="mood-btn" data-mood="2" aria-label="Worried">😟</button>
+        <button class="mood-btn" data-mood="1" aria-label="Sad">☹️</button>
+      </div>
+      <!-- Optional quick journal entry tied to mood -->
+      <label for="journalEntry" class="muted" style="display:block;margin-top:12px;font-size:13px;">Add a quick journal note (optional)</label>
+      <textarea id="journalEntry" rows="3" placeholder="Write how you're feeling..." style="width:100%;padding:10px;border-radius:6px;border:1px solid #e6e6e6;margin-top:6px;"></textarea>
+      <div class="actions">
+        <button id="submitMood" class="btn primary">Submit</button>
+        <span id="moodSavedMsg" class="muted small" aria-live="polite" style="margin-left:8px"></span>
+        <span id="journalSavedMsg" class="muted small" aria-live="polite" style="margin-left:12px"></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Mood History</h3>
+      <p class="muted">Recent mood trend (last 14 entries)</p>
+      <div class="chart-wrap">
+        <canvas id="moodChart" aria-label="Mood history chart" role="img"></canvas>
+      </div>
+    </section>
+
+    <!-- Right Sidebar -->
+    <aside class="sidebar full-width-bottom">
+      <section class="card quick-stats">
+        <h3>Quick Stats</h3>
+        <p class="stat">Entries: <strong id="statEntries">0</strong></p>
+        <p class="stat">Avg mood: <strong id="statAvg">-</strong></p>
+      </section>
+      <section class="card">
+        <h3>Recent Journal Entries</h3>
+        <p class="muted">Your latest notes</p>
+        <div id="journalHistory" style="max-height:220px;overflow:auto;padding-top:8px"></div>
+      </section>
+    </aside>
+
+    <!-- Stress Relief Videos Section -->
+    <section class="stress-relief-section">
+      <h3>🎬 Stress Relief Videos</h3>
+      <p>Take a break and watch these calming videos to help reduce stress and anxiety</p>
+      <div class="videos-grid">
+        <div class="video-card" onclick="window.open('https://youtu.be/cyMxWXlX9sU', '_blank')">
+          <div class="video-thumbnail">🧘</div>
+          <div class="video-info">
+            <h4>Guided Meditation</h4>
+            <p>10-minute relaxation</p>
+            <span class="duration">10 min</span>
+          </div>
+        </div>
+
+        <div class="video-card" onclick="window.open('https://youtu.be/cyMxWXlX9sU', '_blank')">
+          <div class="video-thumbnail">🌊</div>
+          <div class="video-info">
+            <h4>Ocean Sounds</h4>
+            <p>Calming beach ambience</p>
+            <span class="duration">30 min</span>
+          </div>
+        </div>
+
+        <div class="video-card" onclick="window.open('https://youtu.be/3vCQBr67MN4', '_blank')">
+          <div class="video-thumbnail">🌿</div>
+          <div class="video-info">
+            <h4>Nature Walk</h4>
+            <p>Forest immersion</p>
+            <span class="duration">20 min</span>
+          </div>
+        </div>
+
+        <div class="video-card" onclick="window.open('https://youtu.be/R1r9nLYcqBU', '_blank')">
+          <div class="video-thumbnail">🎵</div>
+          <div class="video-info">
+            <h4>Calm Music</h4>
+            <p>Piano relaxation</p>
+            <span class="duration">2 hour</span>
+          </div>
+        </div>
+
+        <div class="video-card" onclick="window.open('https://youtu.be/QguxDCo5NSs', '_blank')">
+          <div class="video-thumbnail">🧘‍♀️</div>
+          <div class="video-info">
+            <h4>Yoga Session</h4>
+            <p>15-minute stretching</p>
+            <span class="duration">11 min</span>
+          </div>
+        </div>
+
+        <div class="video-card" onclick="window.open('https://youtu.be/i3CwNr0S0eY', '_blank')">
+          <div class="video-thumbnail">✨</div>
+          <div class="video-info">
+            <h4>Sleep Ambience</h4>
+            <p>Relaxing night sounds</p>
+            <span class="duration">7 hours</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Motivational Banner (Live Moving) -->
+  <div class="motivational-banner" id="motivationalBanner">
+    <span class="motivational-text" id="motivationalText">
+    ✨ You are capable of more than you know. 🌈 Better days are closer than you think. 💛 Your feelings matter — always. 🌟 You’re growing in ways you can’t see yet. 💪 Every challenge is shaping your strength. 💫 Keep going — your story isn’t finished. ❤️ You deserve peace, joy, and love. 🔥 Your efforts today build your tomorrow. 🌻 One small step can change everything. 🌙 It’s okay to rest — you’re doing enough. 🚀 Your dreams are valid and achievable. 💖 You’re becoming a better version of yourself. 🎯 Stay focused — your goals are worth it. 🌞 You bring light into this world. 🙌 You’re doing better than you think.
+    </span>
+  </div>
+
+  <!-- Dark Mode Toggle moved into header -->
+
+ <!-- Chatbot Popup -->
+<div id="chatbotContainer" class="chatbot-container" style="display:none;">
+  <iframe src="chatbot.html" title="Chatbot" frameborder="0"></iframe>
+  <button id="closeChat" class="close-chat">✖</button>
+</div>
+
+<!-- Chatbot Toggle Button -->
+<button class="chat-toggle" id="chatToggleBtn">💬</button>
+
+
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="dashboard.js"></script>
+
+  <script>
+    // Initialize dark mode from localStorage before DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const isDarkMode = localStorage.getItem("darkMode") === "true";
+      if (isDarkMode) {
+        document.body.classList.add("dark-mode");
+      }
+    });
+
+    // Add mood button selection styling
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    // Motivational messages that cycle through
+    const motivationalMessages = [
+      "✨ You are amazing! • 💪 Keep pushing forward! • 🌟 Believe in yourself! • 💖 You deserve happiness! • 🚀 Great things are coming!",
+      "🎯 Focus on your growth! • 💫 Never give up! • 🌈 Every step counts! • 🔥 You are unstoppable! • 🌺 Progress over perfection!",
+      "💝 Be kind to yourself! • 🌸 Your potential is limitless! • ⭐ Embrace the journey! • 🎪 Celebrate small wins! • 🦋 Transform your mind!",
+      "🎨 Create your own path! • 💎 You are valuable! • 🌟 Spread positivity! • 🚀 Chase your dreams! • ❤️ Love yourself first!",
+      "🌻 Smile, you've got this! • 🏆 You are a champion! • 🌙 Rest and recharge! • ☀️ Rise and shine! • 🎉 Life is beautiful!"
+    ];
+
+    let messageIndex = 0;
+
+    function renderMotivationalMessageTo(element, message) {
+      // Split on bullet separators and wrap each piece to add spacing
+      const parts = message.split('•').map(p => p.trim()).filter(Boolean);
+      element.innerHTML = parts.map(p => `<span class="mot-part">${p}</span>`).join('');
+    }
+
+    function rotateMotivationalMessage() {
+      const banner = document.getElementById('motivationalBanner');
+      const textElement = document.getElementById('motivationalText');
+      
+      if (banner && textElement) {
+        messageIndex = (messageIndex + 1) % motivationalMessages.length;
+        renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+
+        // Reset animation so it restarts from the right
+        textElement.style.animation = 'none';
+        setTimeout(() => {
+          textElement.style.animation = 'slide 15s linear infinite';
+        }, 10);
+      }
+    }
+
+    // Set initial rendered message and rotate every 20 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+      const textElement = document.getElementById('motivationalText');
+      if (textElement) renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+      setInterval(rotateMotivationalMessage, 20000);
+    });
+  </script>
+</body>
+</html>

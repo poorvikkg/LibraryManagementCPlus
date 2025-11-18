@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mental Health Quiz | EmoWellbeing</title>
+<link rel="stylesheet" href="dashboard.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.main-quiz { max-width: 900px; margin: 100px auto 20px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 80px; }
+.quiz-card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); transition: background 0.3s, box-shadow 0.3s; }
+body.dark-mode .quiz-card { background: var(--dark-card); color: var(--dark-text); }
+.quiz-question { font-weight: 500; margin-bottom: 12px; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.quiz-options label { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; border: 1px solid #e6e9ef; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+body.dark-mode .quiz-options label { border: 1px solid #555; }
+.quiz-options input[type="radio"] { accent-color: var(--blue); }
+.quiz-options label:hover { background: #f4f6f9; }
+body.dark-mode .quiz-options label:hover { background: #3b3b50; }
+.feedback { font-size: 14px; margin-top: 8px; font-weight: 500; }
+.progress-bar-container { width: 100%; background: #e6e9ef; border-radius: 12px; height: 12px; margin-bottom: 12px; }
+.progress-bar { height: 100%; background: #a78bba; width: 0%; border-radius: 12px; transition: width 0.3s; }
+</style>
+<style>
+#scoreChart { max-width: 400px; margin-top: 20px; }
+.btn-nav { margin-right: 10px; }
+.result-text { font-weight:600; margin-top:12px; font-size:16px; }
+
+/* ===== Motivational Banner ===== */
+.motivational-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, #a78bba 0%, #c9819f 25%, #7db8c4 50%, #87b79e 75%, #d4a574 100%);
+  background-size: 300% 300%;
+  animation: gradient-shift 8s ease infinite;
+  /* slightly darken banner so it reads darker than page body */
+  background-color: rgba(0,0,0,0.10);
+  background-blend-mode: multiply;
+  color: white;
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  z-index: 100;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+  overflow: hidden;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.motivational-text {
+  display: inline-block;
+  animation: slide 15s linear infinite;
+  white-space: nowrap;
+  padding: 0 20px;
+}
+
+.motivational-text .mot-part {
+  display: inline-block;
+  margin-right: 28px;
+  padding: 0 6px;
+}
+
+@keyframes slide {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.motivational-banner:hover .motivational-text {
+  animation-play-state: paused;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<header class="navbar">
+  <div class="brand">
+    <span class="logo">✨ MindMate</span>
+  </div>
+  <nav class="nav-links">
+    <a href="dashboard.html">Home</a>
+    <a href="journal.html">Journal</a>
+    <a href="history.html">History</a>
+    <a href="quiz.html" class="active">Quiz</a>
+    <a href="games.html">Games</a>
+  </nav>
+  <div class="user-controls">
+    
+    <button class="dark-toggle" id="darkToggleBtn" aria-label="Toggle theme">🌙</button>
+    <button id="logoutBtn" class="btn secondary">Logout</button>
+  </div>
+</header>
+
+<main class="main-quiz">
+  <section class="quiz-card">
+    <h3>Mental Health Self-Assessment</h3>
+    <p class="muted">Answer honestly to see how you are feeling overall.</p>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="quizContainer"></div>
+    
+    <div>
+      <button id="prevBtn" class="btn btn-nav">Previous</button>
+      <button id="nextBtn" class="btn btn-nav">Next</button>
+      <button id="submitQuiz" class="btn primary" style="display:none;">Submit</button>
+    </div>
+
+    <p id="quizScore" class="result-text"></p>
+    <canvas id="scoreChart"></canvas>
+  </section>
+</main>
+
+<script>
+// Comprehensive Health Assessment Quiz (10 Questions)
+const quizData = [
+  { question: "How often do you feel anxious or stressed?", options: ["Always", "Often", "Sometimes", "Rarely"], score: [1, 2, 3, 4], category: "mental" },
+  { question: "How often do you feel happy or content?", options: ["Rarely", "Sometimes", "Often", "Always"], score: [1, 2, 3, 4], category: "mental" },
+  { question: "How is your sleep quality?", options: ["Poor", "Average", "Good", "Excellent"], score: [1, 2, 3, 4], category: "physical" },
+  { question: "How often do you exercise or move your body?", options: ["Never", "Occasionally", "Regularly", "Daily"], score: [1, 2, 3, 4], category: "physical" },
+  { question: "How often do you feel motivated during the day?", options: ["Rarely", "Sometimes", "Often", "Always"], score: [1, 2, 3, 4], category: "mental" },
+  { question: "How often do you socialize or talk to friends/family?", options: ["Never", "Rarely", "Sometimes", "Often"], score: [1, 2, 3, 4], category: "social" },
+  { question: "How often do you take breaks to relax or meditate?", options: ["Never", "Sometimes", "Often", "Always"], score: [1, 2, 3, 4], category: "physical" },
+  { question: "How satisfied are you with your diet and nutrition?", options: ["Very Unsatisfied", "Unsatisfied", "Satisfied", "Very Satisfied"], score: [1, 2, 3, 4], category: "physical" },
+  { question: "How would you rate your overall stress management?", options: ["Poor", "Fair", "Good", "Excellent"], score: [1, 2, 3, 4], category: "mental" },
+  { question: "How often do you feel lonely or isolated?", options: ["Always", "Often", "Sometimes", "Rarely"], score: [1, 2, 3, 4], category: "social" }
+];
+
+let currentQ = 0;
+let userAnswers = [];
+const user = localStorage.getItem("loggedInUser") || "Guest";
+
+function loadQuestion() {
+  const q = quizData[currentQ];
+  const container = document.getElementById("quizContainer");
+  container.innerHTML = `
+    <p class="quiz-question">${currentQ + 1}. ${q.question}</p>
+    <div class="quiz-options">
+      ${q.options.map((opt, i) => `
+        <label><input type="radio" name="q${currentQ}" value="${i}"> ${opt}</label>
+      `).join('')}
+    </div>
+    <p class="feedback" id="feedback"></p>
+  `;
+  // restore previous selection
+  if (userAnswers[currentQ] !== undefined) {
+    const sel = container.querySelector(`input[value="${userAnswers[currentQ]}"]`);
+    if (sel) sel.checked = true;
+  }
+  updateProgressBar();
+  document.getElementById("prevBtn").style.display = currentQ === 0 ? "none" : "inline-block";
+  document.getElementById("nextBtn").style.display = currentQ === quizData.length - 1 ? "none" : "inline-block";
+  document.getElementById("submitQuiz").style.display = currentQ === quizData.length - 1 ? "inline-block" : "none";
+}
+
+function updateProgressBar() {
+  const percent = ((currentQ + 1) / quizData.length) * 100;
+  document.getElementById("progressBar").style.width = percent + "%";
+}
+
+function saveAnswer() {
+  const selected = document.querySelector(`input[name="q${currentQ}"]:checked`);
+  if (selected) userAnswers[currentQ] = Number(selected.value);
+}
+
+function showFeedback() {
+  const feedbackEl = document.getElementById("feedback");
+  const selected = userAnswers[currentQ];
+  if (selected === undefined) { feedbackEl.textContent = ""; return; }
+  feedbackEl.textContent = "Answer saved ✓";
+  feedbackEl.style.color = "#6BCB77";
+}
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+  saveAnswer();
+  showFeedback();
+  currentQ++;
+  loadQuestion();
+});
+
+document.getElementById("prevBtn").addEventListener("click", () => {
+  saveAnswer();
+  showFeedback();
+  currentQ--;
+  loadQuestion();
+});
+
+document.getElementById("submitQuiz").addEventListener("click", () => {
+  saveAnswer();
+  showFeedback();
+  
+  // Calculate total score
+  let totalScore = 0;
+  const categoryScores = { mental: 0, physical: 0, social: 0 };
+  const categoryCounts = { mental: 0, physical: 0, social: 0 };
+  
+  quizData.forEach((q, i) => {
+    if (userAnswers[i] !== undefined) {
+      const score = q.score[userAnswers[i]];
+      totalScore += score;
+      categoryScores[q.category] += score;
+      categoryCounts[q.category]++;
+    }
+  });
+  
+  const maxScore = quizData.length * 4;
+  const healthPercent = (totalScore / maxScore) * 100;
+  const status = getHealthStatus(healthPercent);
+  const suggestions = getPersonalizedSuggestions(healthPercent, categoryScores, categoryCounts, userAnswers);
+  
+  // Display results - clear previous suggestions first
+  const quizScoreEl = document.getElementById("quizScore");
+  const quizCard = quizScoreEl.closest(".quiz-card");
+  
+  // Remove any previous suggestions
+  const prevSuggestions = quizCard.querySelectorAll("div[data-suggestions='true']");
+  prevSuggestions.forEach(el => el.remove());
+  
+  quizScoreEl.innerHTML = `
+    <div style="display:flex; align-items:center; gap:15px; margin-top:12px;">
+      <div style="flex:1;">
+        <h3 style="margin:0; font-size:24px; color:#2575fc;">Health Score: ${Math.round(healthPercent)}%</h3>
+        <p style="margin:8px 0 0 0; font-size:16px; color:#555;">${status}</p>
+      </div>
+      <div style="width:120px; height:120px; border-radius:50%; background:conic-gradient(#6BCB77 0% ${healthPercent}%, #e6e9ef ${healthPercent}% 100%); display:flex; align-items:center; justify-content:center;">
+        <div style="width:110px; height:110px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:20px; color:#2575fc;">
+          ${Math.round(healthPercent)}%
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Display suggestions
+  const suggestionsEl = document.createElement("div");
+  suggestionsEl.setAttribute("data-suggestions", "true");
+  suggestionsEl.style.cssText = "margin-top:20px; padding:15px; background:#f4f6f9; border-radius:8px; border-left:4px solid #2575fc;";
+  suggestionsEl.innerHTML = `
+    <h4 style="margin:0 0 10px 0; color:#2575fc;">💡 Personalized Recommendations:</h4>
+    <ul style="margin:0; padding-left:20px; color:#333; font-size:14px; line-height:1.6;">
+      ${suggestions.map(s => `<li>${s}</li>`).join('')}
+    </ul>
+  `;
+  quizScoreEl.parentNode.insertBefore(suggestionsEl, quizScoreEl.nextSibling);
+  
+  localStorage.setItem(`mentalHealth_${user}`, JSON.stringify({ score: totalScore, healthPercent, status, date: new Date().toISOString() }));
+  showScoreChart(totalScore, maxScore, healthPercent);
+});
+
+function getHealthStatus(percent) {
+  if (percent <= 40) return "⚠️ Poor - Consider professional support and immediate self-care.";
+  else if (percent <= 60) return "📊 Fair - You're managing, but improvements needed in key areas.";
+  else if (percent <= 80) return "✅ Good - You're doing well! Continue healthy habits.";
+  else return "🌟 Excellent - Outstanding health! Keep up the great work!";
+}
+
+function getPersonalizedSuggestions(percent, categoryScores, categoryCounts, answers) {
+  const suggestions = [];
+  
+  // Mental health suggestions
+  const mentalAvg = categoryScores.mental / categoryCounts.mental;
+  if (mentalAvg <= 2) {
+    suggestions.push("Consider talking to a mental health professional or counselor.");
+    suggestions.push("Try mindfulness or breathing exercises daily (5-10 minutes).");
+  } else if (mentalAvg <= 3) {
+    suggestions.push("Increase your meditation or relaxation practices.");
+    suggestions.push("Connect with friends or family regularly to maintain emotional well-being.");
+  }
+  
+  // Physical health suggestions
+  const physicalAvg = categoryScores.physical / categoryCounts.physical;
+  if (physicalAvg <= 2) {
+    suggestions.push("Start with 15-20 minutes of light exercise 3-4 times per week.");
+    suggestions.push("Review your sleep schedule and aim for 7-9 hours nightly.");
+    suggestions.push("Evaluate your diet; consider consulting a nutritionist.");
+  } else if (physicalAvg <= 3) {
+    suggestions.push("Increase exercise frequency to at least 5 days a week.");
+    suggestions.push("Ensure consistent sleep timing to improve sleep quality.");
+  }
+  
+  // Social health suggestions
+  const socialAvg = categoryScores.social / categoryCounts.social;
+  if (socialAvg <= 2) {
+    suggestions.push("Increase social interactions—join groups or activities you enjoy.");
+    suggestions.push("Reach out to at least one friend or family member per week.");
+  } else if (socialAvg <= 3) {
+    suggestions.push("Continue building your social connections and relationships.");
+  }
+  
+  // Overall suggestions
+  if (percent >= 80) {
+    suggestions.push("Great job maintaining your health! Share your habits with others.");
+  } else if (percent >= 60) {
+    suggestions.push("Track your progress weekly to stay motivated and accountable.");
+  } else {
+    suggestions.push("Start small—pick one area to focus on each week.");
+  }
+  
+  return suggestions.length > 0 ? suggestions : ["Keep monitoring your health regularly."];
+}
+
+let scoreChartInstance = null;
+
+function showScoreChart(score, maxScore, percent) {
+  // Destroy previous chart if it exists
+  if (scoreChartInstance) {
+    scoreChartInstance.destroy();
+  }
+  
+  const ctx = document.getElementById("scoreChart").getContext("2d");
+  scoreChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Health Score', 'Remaining'],
+      datasets: [{
+        data: [percent, 100 - percent],
+        backgroundColor: ['#6BCB77', '#e6e9ef'],
+        borderColor: ['#6BCB77', '#e6e9ef']
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadQuestion();
+  document.getElementById("quizContainer").addEventListener("change", showFeedback);
+
+  // Initialize and persist dark mode
+  const isDark = localStorage.getItem('darkMode') === 'true';
+  if (isDark) document.body.classList.add('dark-mode');
+  const dt = document.querySelector('.dark-toggle');
+  if (dt) dt.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+  });
+});
+// --- Insert standardized motivational banner markup and rotation script ---
+// (keeps the exact dashboard text and message set)
+
+
+const motivationalMessages = [
+      "✨ You are amazing! • 💪 Keep pushing forward! • 🌟 Believe in yourself! • 💖 You deserve happiness! • 🚀 Great things are coming!",
+      "🎯 Focus on your growth! • 💫 Never give up! • 🌈 Every step counts! • 🔥 You are unstoppable! • 🌺 Progress over perfection!",
+      "💝 Be kind to yourself! • 🌸 Your potential is limitless! • ⭐ Embrace the journey! • 🎪 Celebrate small wins! • 🦋 Transform your mind!",
+      "🎨 Create your own path! • 💎 You are valuable! • 🌟 Spread positivity! • 🚀 Chase your dreams! • ❤️ Love yourself first!",
+      "🌻 Smile, you've got this! • 🏆 You are a champion! • 🌙 Rest and recharge! • ☀️ Rise and shine! • 🎉 Life is beautiful!"
+    ];
+
+    let messageIndex = 0;
+
+    function renderMotivationalMessageTo(element, message) {
+      // Split on bullet separators and wrap each piece to add spacing
+      const parts = message.split('•').map(p => p.trim()).filter(Boolean);
+      element.innerHTML = parts.map(p => `<span class="mot-part">${p}</span>`).join('');
+    }
+
+    function rotateMotivationalMessage() {
+      const banner = document.getElementById('motivationalBanner');
+      const textElement = document.getElementById('motivationalText');
+      
+      if (banner && textElement) {
+        messageIndex = (messageIndex + 1) % motivationalMessages.length;
+        renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+
+        // Reset animation so it restarts from the right
+        textElement.style.animation = 'none';
+        setTimeout(() => {
+          textElement.style.animation = 'slide 15s linear infinite';
+        }, 10);
+      }
+    }
+
+    // Set initial rendered message and rotate every 20 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+      const textElement = document.getElementById('motivationalText');
+      if (textElement) renderMotivationalMessageTo(textElement, motivationalMessages[messageIndex]);
+      setInterval(rotateMotivationalMessage, 20000);
+    });
+</script>
+
+<!-- Motivational Banner -->
+<div class="motivational-banner" id="motivationalBanner">
+  <span class="motivational-text" id="motivationalText">
+    ✨ You are amazing! • 💪 Keep pushing forward! • 🌟 Believe in yourself! • 💖 You deserve happiness!
+  </span>
+</div>
+</body>
+</html>
